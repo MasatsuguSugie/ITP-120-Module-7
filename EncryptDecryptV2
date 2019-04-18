@@ -1,0 +1,247 @@
+package itp120mod7;
+
+import java.util.*;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.io.*;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.awt.*;
+
+public class EncryptDecryptV2 {
+	public static Scanner scan = new Scanner(System.in);
+
+	public static void main(String[] args) {
+
+		// Make an AL that will hold each line of text as a String
+
+		ArrayList<String> normalFileLines = new ArrayList<String>();
+		ArrayList<String> encryptedFileLines = new ArrayList<String>();
+		ArrayList<String> decryptedFileLines = new ArrayList<String>();
+
+		// Create the responses that will be given when menu choices are
+		// selected
+		int choice = 0;
+		while (choice >= 0) {
+			choice = menu();
+
+			if (choice == 1) {
+				// clear anything in AL and read in new file
+				normalFileLines.clear();
+				System.out.println("Please select a file");
+				normalFileLines = readText();
+			} else if (choice == 2) {
+				System.out.println("Here is the text: \n");
+				print(normalFileLines);
+			} else if (choice == 3) {
+				// encrypt file
+				encryptedFileLines = encrypt(normalFileLines);
+
+				// write encrypted file to console
+				System.out.println("Here is the encrypted text: \n");
+				print(encryptedFileLines);
+			} else if (choice == 4) {
+				// write out encrypted file to a text file
+				writeText(encryptedFileLines);
+			} else if (choice == 5) {
+				// clear data in memory
+				normalFileLines.clear();
+				encryptedFileLines.clear();
+				decryptedFileLines.clear();
+			} else if (choice == 6) {
+				// read in an encrypted file
+				encryptedFileLines.clear();
+				System.out.println("Please select an encrypted file");
+				encryptedFileLines = readText();
+			} else if (choice == 7) {
+				// decrypt file
+				decryptedFileLines = decrypt(encryptedFileLines);
+			} else if (choice == 8) {
+				// write out decrypted file to console
+				System.out.println("Here is the decrypted text: \n");
+				print(decryptedFileLines);
+			}
+
+			else if (choice == 9) {
+				System.out.println("Thank you for using my program.");
+				choice = -1;
+			}
+
+		}
+
+	}
+
+	public static int menu() {
+		System.out.println("Choice:");
+		System.out.println("   1.  Read in a file");
+		System.out.println("   2.  Print the file to the console");
+		System.out.println("   3.  Encrypt the file and write to console");
+		System.out.println("   4.  Write out encrypted file to a text file");
+		System.out.println("   5.  Clear the data in memory");
+		System.out.println("   6.  Read in an encrypted file");
+		System.out.println("   7. Decrypt the file ");
+		System.out
+				.println("   8. Write out the decrypted file to the console ");
+		System.out.println("   9. End ");
+		System.out.println("\n CHOICE:");
+		int value = scan.nextInt();
+		return value;
+
+	}
+
+	public static ArrayList<String> readText() {
+		ArrayList<String> normalLines = new ArrayList<String>();
+		Frame f = new Frame();
+		// decide from where to read the file
+		FileDialog foBox = new FileDialog(f, "Reading Text File",
+				FileDialog.LOAD);
+		foBox.setVisible(true);
+
+		// get the absolute path to the file
+		String foName = foBox.getFile();
+		String dirPath = foBox.getDirectory();
+
+		// create a file instance for the absolute path
+		File inFile = new File(dirPath + foName);
+		BufferedReader in = null;
+		try {
+			// create a BufferedReader to use to read in the file
+			in = new BufferedReader(new FileReader(inFile));
+
+			// read in the first entire line from the file
+			String line = in.readLine();
+
+			// PART II
+			// continue until the line is null (ie you are at the end of the
+			// file)
+
+			// while there are more lines, add each line to the AL
+			while (line != null) {
+				normalLines.add(line);
+
+				// read in next line
+				line = in.readLine();
+			}
+		}
+
+		// catch any IOException that occurs
+		catch (IOException io) {
+			System.out.println("An IO Exception occurred");
+			io.printStackTrace();
+		} finally // finally always runs no matter what so close the file here!
+		{
+			// close the file. Java is neurotic - it worried
+			// "but what if it is already closed?" so needs another try/catch
+			try {
+				in.close();
+			} catch (Exception e) {
+			} // note the {} - means "do nothing". I wanted it closed anyway.
+		}
+		return normalLines;
+
+	}
+
+	public static void print(ArrayList<String> al) {
+		for (int i = 0; i < al.size(); i++) {
+			System.out.print(al.get(i).toString() + "\n");
+
+		}
+		System.out.println("\n");
+	}
+
+	public static void writeText(ArrayList<String> al) {
+		// create the frame for the FileDialog box
+		Frame f = new Frame();
+		// decide where to save the file
+		FileDialog foBox = new FileDialog(f, "Saving File", FileDialog.SAVE);
+		foBox.setVisible(true);
+
+		// we need to get the path where the file will be stored
+		// user will pick where from the dialog box
+		// the combination of directory name plus file name is absolute path
+		String foName = foBox.getFile();
+		String dirPath = foBox.getDirectory();
+		// create a File instance for that absolute path
+		File outFile = new File(dirPath + foName);
+		// create a PrintWriter
+		PrintWriter out = null;
+
+		try {
+			// the PrintWriter is the file wrapped in a FileWriter wrapped in a
+			// BufferedWriter
+			out = new PrintWriter(new BufferedWriter(new FileWriter(outFile)));
+
+			for (int i = 0; i < al.size(); i++) {
+				out.println(al.get(i));
+			}
+		}
+		// catch any IOExceptions that occur
+		catch (IOException io) {
+			System.out.println("An IO Exception occurred");
+			io.printStackTrace();
+		} finally {
+
+			// close the file. Java is neurotic - it worried
+			// "but what if it is already closed?" so needs another try/catch
+			try {
+				out.close();
+			} catch (Exception e) {
+			} // note the {} - means "do nothing". I wanted it closed anyway.
+
+		}
+
+	}
+
+	public static ArrayList<String> encrypt(ArrayList<String> al) {
+		ArrayList<String> encrypted = new ArrayList<String>();
+
+		char originalChar;
+		int charAsInt;
+		int nextInt;
+		char encrChar;
+		String encrCharAsString;
+		for (int i = 0; i < al.size(); i++) {
+			String encryptedLine = "";
+			String line = al.get(i);
+			for (int j = 0; j < line.length(); j++) {
+				originalChar = line.charAt(j);
+				charAsInt = (int) originalChar;
+				nextInt = charAsInt + 1;
+				encrChar = (char) nextInt;
+				encrCharAsString = String.valueOf(encrChar);
+				encryptedLine += encrCharAsString;
+			}
+			encrypted.add(encryptedLine);
+
+		}
+		return encrypted;
+	}
+
+	public static ArrayList<String> decrypt(ArrayList<String> al) {
+		ArrayList<String> decrypted = new ArrayList<String>();
+		char originalChar;
+		int charAsInt;
+		int nextInt;
+		char encrChar;
+		String encrCharAsString;
+		for (int i = 0; i < al.size(); i++) {
+			String decryptedLine = "";
+			String line = al.get(i);
+			for (int j = 0; j < line.length(); j++) {
+				originalChar = line.charAt(j);
+				charAsInt = (int) originalChar;
+				nextInt = charAsInt - 1;
+				encrChar = (char) nextInt;
+				encrCharAsString = String.valueOf(encrChar);
+				decryptedLine += encrCharAsString;
+			}
+			decrypted.add(decryptedLine);
+
+		}
+		return decrypted;
+	}
+
+}
